@@ -7,7 +7,7 @@ import torch
 import torch.nn.functional as F
 from sklearn.preprocessing import MinMaxScaler
 from data_load import load_data
-from model import DeepGravity, OD_normer, SpatialAttentionModel, FlowPredictor, distributePredictor,ODFeatureMLP,ODJointMLP
+from model import DeepGravity, OD_normer, SpatialAttentionModel, FlowPredictor, ODFeatureMLP, ODJointMLP
 from pprint import pprint
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
