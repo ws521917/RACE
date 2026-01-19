@@ -7,7 +7,7 @@ import torch
 import torch.nn.functional as F
 from sklearn.preprocessing import MinMaxScaler
 from data_load import load_data
-from model import DeepGravity, OD_normer, SpatialAttentionModel, FlowPredictor, distributePredictor, PairTransformer, SegmentTransformerGate
+from model import DeepGravity, OD_normer, SpatialAttentionModel, FlowPredictor, distributePredictor,ODFeatureMLP,ODJointMLP
 from pprint import pprint
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -40,9 +40,7 @@ def main(args):
     # distributePredictor2 = distributePredictor(args.embed_dim).cuda()
     joint_input_dim = 217
     od_joint_mlp = ODJointMLP(input_dim=joint_input_dim, hidden_dim=args.embed_dim, output_dim=1).cuda()
-    # pair_transformer = SegmentTransformerGate(embed_dim=args.embed_dim*6 + 1).cuda()  # 可调整
     od_mlp = ODFeatureMLP(input_dim=train_od_features.shape[1], hidden_dim=args.embed_dim, output_dim=48).cuda()
-    # fea_mlp = FeatureMLP(input_dim=train_attr.shape[1], hidden_dim=args.embed_dim, output_dim=args.embed_dim).cuda()
     optimizer = torch.optim.Adam(
         list(region_encoder.parameters()) +
         list(distributepredictor.parameters()) +
