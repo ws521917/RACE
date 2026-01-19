@@ -1,4 +1,4 @@
-# main.py
+
 import os
 import time
 import argparse
@@ -24,52 +24,10 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-
-# ----------------- OD MLP -----------------
-class ODFeatureMLP(torch.nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
-        super().__init__()
-        self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(input_dim, hidden_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_dim, output_dim)
-        )
-    def forward(self, x):
-        return self.mlp(x)
-
-class FeatureMLP(torch.nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
-        super().__init__()
-        self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(input_dim, hidden_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_dim, output_dim)
-        )
-    def forward(self, x):
-        return self.mlp(x)
-    
-class ODJointMLP(torch.nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
-        super().__init__()
-        self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(input_dim, hidden_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_dim, hidden_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_dim, hidden_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_dim, output_dim)
-        )
-    def forward(self, x):
-        return self.mlp(x).squeeze(-1)  # [B]
-
-
-
-# ----------------- 主训练函数 -----------------
 def main(args):
     print("\n  **Loading data...")
     train_samples, valid_samples, test_samples, neighbors_index, attr, train_od_features,train_attr,train_idx,valid_idx, test_idx = load_data(
-        city_path=args.city_path,
+        city_path=args.dataset,
         neighbors_k=args.neighbor_k
     )
     print(train_od_features.shape)
@@ -80,7 +38,6 @@ def main(args):
     # flow_predictor = FlowPredictor(args.embed_dim).cuda()
     distributepredictor = distributePredictor(args.embed_dim).cuda()
     # distributePredictor2 = distributePredictor(args.embed_dim).cuda()
-    # 将出发区域 embedding + OD 特征拼接做 MLP 预测
     joint_input_dim = 217
     od_joint_mlp = ODJointMLP(input_dim=joint_input_dim, hidden_dim=args.embed_dim, output_dim=1).cuda()
     # pair_transformer = SegmentTransformerGate(embed_dim=args.embed_dim*6 + 1).cuda()  # 可调整
@@ -179,9 +136,6 @@ def main(args):
                     print("Early stopping!")
                     break
 
-
-    # ----------------- 测试 -----------------
-    # ✅ 保存最后一轮（注意：还没 load best 之前）
     print("\n  **Evaluating on test set...")
     region_encoder.load_state_dict(best_model_state['region_encoder'])
     od_mlp.load_state_dict(best_model_state['od_mlp'])
@@ -205,13 +159,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu", type=int, default=3)
     parser.add_argument("--seed", type=int, default=1234)
-    parser.add_argument("--city_path", type=str, default="./data/SF")
+    parser.add_argument("--dataset", type=str, default="./data/NYC")
     parser.add_argument("--neighbor_k", type=int, default=30)
     parser.add_argument("--embed_dim", type=int, default=60)
-    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--max_epoch", type=int, default=200)
-    parser.add_argument("--patience", type=int, default=30)
+    parser.add_argument("--patience", type=int, default=10)
     args = parser.parse_args()
 
     set_seed(args.seed)
