@@ -360,3 +360,29 @@ class ODFeatureMLP(torch.nn.Module):
         )
     def forward(self, x):
         return self.mlp(x)
+
+class FeatureMLP(torch.nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super().__init__()
+        self.mlp = torch.nn.Sequential(
+            torch.nn.Linear(input_dim, hidden_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_dim, output_dim)
+        )
+    def forward(self, x):
+        return self.mlp(x)
+    
+class ODJointMLP(torch.nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super().__init__()
+        self.mlp = torch.nn.Sequential(
+            torch.nn.Linear(input_dim, hidden_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_dim, hidden_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_dim, hidden_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_dim, output_dim)
+        )
+    def forward(self, x):
+        return self.mlp(x).squeeze(-1)  # [B]
