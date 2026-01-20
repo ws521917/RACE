@@ -13,7 +13,7 @@ RACE explicitly models asymmetric regional roles (origin vs. destination) and di
 </p>
 
 ### Configurations
- For all datasets, we train the model using the Adam optimizer with a learning rate of 1e-3 and a weight decay of 1e-5 for up to 200 epochs with early stopping (patience = 10) and a batch size of 16, where the embedding dimensions are set to d_r = 48 (Attractive/Emissive), d_c = 48 (Collaborative), and d = 48.
+ For all datasets, we train RACE using the Adam optimizer with a learning rate of 1e-3 and a weight decay of 1e-5 for up to 200 epochs with early stopping (patience = 10) and a batch size of 16, where the embedding dimensions are set to d_r = 48 (Attractive/Emissive), d_c = 48 (Collaborative), and d = 48.
 
 
 ### Requirements
@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ### Run
 #### The following is a run of New York City Dataset (San Franscio and Washington DC is similarly provided):
 
-- For STEP model:
+- For RACE model:
   ```shell
   python ./model/main.py --dataset NYC --embed_dim 48 --neighbor_k 30
   ```
