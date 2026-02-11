@@ -19,13 +19,15 @@ RACE explicitly models asymmetric regional roles (origin vs. destination) and di
 
 ## Dataset
 
-We use three representative metropolitan areas in the United States to evaluate RACE: **New York (NYC)**, **San Francisco (SF)** and **Washington DC (DC)**
+We use three representative metropolitan areas in the United States to evaluate RACE: **New York (NYC)**, **San Francisco (SF)**, and **Washington DC (DC)**.
 
 ### Data Sources
 
-- **Commuting OD data**: U.S. Census LODES (Origin–Destination Employment Statistics)  
+- **Commuting OD data**: Origin–Destination Employment Statistics (LODES) released by the U.S. Census Bureau.
 
-- **Regional attributes**: Derived from OpenStreetMap (POI distributions)
+- **Regional attributes**: Derived from OpenStreetMap (OSM) data.
+  
+For detailed dataset descriptions and citations, please refer to the paper.
 
 ### Data Format
 
@@ -46,8 +48,7 @@ data/<CITY>/
 
 ## Configurations
 
-For all datasets, we train RACE using the Adam optimizer with a learning rate of 1e-3 and a weight decay of 1e-5 for up to 200 epochs. Early stopping is applied with a patience of 10 epochs, and the batch size is set to 16. The embedding dimensions are configured as d_r = 48 for the Attractive and Emissive role-aware embeddings, d_c = 48 for the collaborative embedding, and d = 48 for the unified region representation.
-
+For all datasets, we train RACE using the Adam optimizer with a learning rate of 1e-3 and a weight decay of 1e-5 for up to 200 epochs. Early stopping is applied with a patience of 10 epochs, and the batch size is set to 16. The embedding dimensions are set to d_r = 48 for the Attractive and Emissive embeddings, d_c = 48 for the collaborative embedding, and d = 48 for the final region representation.
 ## Requirements
 
 Install dependencies via:
@@ -61,7 +62,7 @@ pip install -r requirements.txt
 ## Run
 
 Example: New York City dataset  
-(San Francisco and Washington DC are similar)
+(San Francisco and Washington DC can be run in the same way.)
 
 ```shell
 python ./model/main.py --dataset NYC --embed_dim 48 --neighbor_k 30
