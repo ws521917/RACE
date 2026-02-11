@@ -26,7 +26,6 @@ We use three representative metropolitan areas in the United States to evaluate 
 - **Commuting OD data**: U.S. Census LODES (Origin–Destination Employment Statistics)  
 
 - **Regional attributes**: Derived from OpenStreetMap (POI distributions)
--   
 
 ### Data Format
 
