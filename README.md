@@ -6,7 +6,7 @@ This repository contains the official implementation of **RACE**, a role-aware a
 
 RACE explicitly models asymmetric regional roles (origin vs. destination) and distills collaborative signals from the OD matrix into attribute-based representations, enabling accurate flow prediction for unseen regions.
 
----
+----
 
 ## Project Structure
 
