@@ -10,32 +10,24 @@ RACE explicitly models asymmetric regional roles (origin vs. destination) and di
 
 ## Project Structure
 
-- **main.py**  
-  Entry point for training and evaluation.
-
-- **framework.py**  
-  Implementation of the RACE model, including bidirectional embedding enhancement, collaborative encoding, and multi-view prediction.
-
-- **data_load.py**  
-  Loads dataset files and performs region-level cold-start split.
-
-- **tools.py**  
-  Implements evaluation metrics such as CPC, MAE, and RMSE.
+- `main.py`: entry point for model training and evaluation.
+- `framework.py`: implementation of the RACE model, including bidirectional embedding enhancement, collaborative encoding, and multi-view prediction.
+- `data_load.py`: dataset loading and region-level cold-start split.
+- `tools.py`: evaluation utilities, including CPC, MAE, and RMSE computation.
 
 ---
 
 ## Dataset
 
-We use three real-world commuting datasets:
-
-- **New York (NYC)**
-- **San Francisco (SF)**
-- **Washington DC (DC)**
+We use three representative metropolitan areas in the United States to evaluate RACE: **New York (NYC)**, **San Francisco (SF)** and **Washington DC (DC)**
 
 ### Data Sources
 
-- Commuting OD data: U.S. Census LODES (Origin–Destination Employment Statistics)
-- Regional attributes: Derived from OpenStreetMap (POI distributions)
+- **Commuting OD data**: U.S. Census LODES (Origin–Destination Employment Statistics)  
+  https://lehd.ces.census.gov/data/
+
+- **Regional attributes**: Derived from OpenStreetMap (POI distributions)  
+  https://www.openstreetmap.org/
 
 ### Data Format
 
@@ -48,35 +40,15 @@ data/<CITY>/
 └── od.npy
 ```
 
-- **attr.npy**  
-  Region attribute matrix.
-
-- **dis.npy**  
-  Pairwise spatial distance matrix between regions.
-
-- **od.npy**  
-  Commuting origin–destination flow matrix.
+- `attr.npy`: region attribute matrix (POI and demographic features).
+- `dis.npy`: pairwise spatial distance matrix between regions.
+- `od.npy`: commuting origin–destination flow matrix.
 
 ---
 
 ## Configurations
 
-For all datasets, we train RACE using:
-
-- Optimizer: Adam  
-- Learning rate: 1e-3  
-- Weight decay: 1e-5  
-- Maximum epochs: 200  
-- Early stopping patience: 10  
-- Batch size: 16  
-
-Embedding dimensions:
-
-- $begin:math:text$ d\_r \= 48 $end:math:text$ (Attractive / Emissive)
-- $begin:math:text$ d\_c \= 48 $end:math:text$ (Collaborative)
-- $begin:math:text$ d \= 48 $end:math:text$
-
----
+For all datasets, we train RACE using the Adam optimizer with a learning rate of 1e-3 and a weight decay of 1e-5 for up to 200 epochs. Early stopping is applied with a patience of 10 epochs, and the batch size is set to 16. The embedding dimensions are configured as d_r = 48 for the Attractive and Emissive role-aware embeddings, d_c = 48 for the collaborative embedding, and d = 48 for the unified region representation.
 
 ## Requirements
 
@@ -97,8 +69,3 @@ Example: New York City dataset
 python ./model/main.py --dataset NYC --embed_dim 48 --neighbor_k 30
 ```
 
-Main arguments:
-
-- `--dataset` : Dataset name under `data/`
-- `--embed_dim` : Embedding dimension
-- `--neighbor_k` : Number of neighbors in bidirectional enhancement
