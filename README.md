@@ -10,28 +10,6 @@ RACE explicitly models asymmetric regional roles (origin vs. destination) and di
 
 ## Project Structure
 
-```
-RACE/
-├── data/
-│   ├── NYC/
-│   ├── SF/
-│   └── DC/
-│       ├── attr.npy
-│       ├── dis.npy
-│       └── od.npy
-│
-├── model/
-│   ├── main.py
-│   ├── framework.py
-│   ├── data_load.py
-│   └── tools.py
-│
-├── requirements.txt
-└── README.md
-```
-
-### File Description
-
 - **main.py**  
   Entry point for training and evaluation.
 
