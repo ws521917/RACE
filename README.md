@@ -24,10 +24,9 @@ We use three representative metropolitan areas in the United States to evaluate 
 ### Data Sources
 
 - **Commuting OD data**: U.S. Census LODES (Origin–Destination Employment Statistics)  
-  https://lehd.ces.census.gov/data/
 
-- **Regional attributes**: Derived from OpenStreetMap (POI distributions)  
-  https://www.openstreetmap.org/
+- **Regional attributes**: Derived from OpenStreetMap (POI distributions)
+-   
 
 ### Data Format
 
@@ -40,7 +39,7 @@ data/<CITY>/
 └── od.npy
 ```
 
-- `attr.npy`: region attribute matrix (POI and demographic features).
+- `attr.npy`: region attribute matrix.
 - `dis.npy`: pairwise spatial distance matrix between regions.
 - `od.npy`: commuting origin–destination flow matrix.
 
