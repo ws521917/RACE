@@ -1,33 +1,25 @@
-
-import os
 import time
 import argparse
 import numpy as np
 import torch
-import torch.nn.functional as F
-from sklearn.preprocessing import MinMaxScaler
+
 from data_load import load_data
-from model import DeepGravity, OD_normer, SpatialAttentionModel, FlowPredictor, ODFeatureMLP, ODJointMLP
+from model import (SpatialAttentionModel,distributePredictor,ODFeatureMLP,FeatureMLP,ODJointMLP)
 from pprint import pprint
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from tools import contrastive_loss, build_batch, evaluate, evaluate_valid
+from tools import contrastive_loss, build_batch, evaluate, evaluate_valid,contrastive_loss_sym,set_seed
+torch.cuda.set_device(3)  
+import numpy as np
 import copy
-def set_seed(seed):
-    import random
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+
+
 
 
 def main(args):
     print("\n  **Loading data...")
     train_samples, valid_samples, test_samples, neighbors_index, attr, train_od_features,train_attr,train_idx,valid_idx, test_idx = load_data(
-        city_path=args.dataset,
+        city_path=args.city_path,
         neighbors_k=args.neighbor_k
     )
     print(train_od_features.shape)
@@ -35,12 +27,16 @@ def main(args):
     k = neighbors_index.shape[1]
 
     region_encoder = SpatialAttentionModel(num_nodes, feat_dim, embed_dim=args.embed_dim, k=k).cuda()
-    # flow_predictor = FlowPredictor(args.embed_dim).cuda()
+    # ✅ 保存 epoch0（训练开始前）
+    state_epoch0 = copy.deepcopy(region_encoder.state_dict())
+  
     distributepredictor = distributePredictor(args.embed_dim).cuda()
-    # distributePredictor2 = distributePredictor(args.embed_dim).cuda()
+
     joint_input_dim = 217
     od_joint_mlp = ODJointMLP(input_dim=joint_input_dim, hidden_dim=args.embed_dim, output_dim=1).cuda()
+    
     od_mlp = ODFeatureMLP(input_dim=train_od_features.shape[1], hidden_dim=args.embed_dim, output_dim=48).cuda()
+    
     optimizer = torch.optim.Adam(
         list(region_encoder.parameters()) +
         list(distributepredictor.parameters()) +
@@ -61,15 +57,14 @@ def main(args):
 
     print("\n  **Start training...")
     for epoch in range(args.max_epoch):
-        epoch_start = time.time()
+        epoch_start = time.time()   # ✅ start timing
         print(f"Epoch {epoch + 1}:", end=" | ")
         region_encoder.train()
-        # flow_predictor.train()
+
         distributepredictor.train()
-        # distributePredictor2.train()
-        # pair_transformer.train()
+   
         od_mlp.train()
-        # fea_mlp.train()
+
         train_loader = DataLoader(train_samples, batch_size=args.batch_size, shuffle=True, collate_fn=lambda x: x)
         epoch_losses = []
         train_idx_map = {area_id: i for i, area_id in enumerate(train_idx)}
@@ -78,24 +73,29 @@ def main(args):
         # ----------------- 训练循环 -----------------
         for batch in train_loader:
             region_embeddings = region_encoder(attr_tensor, neighbor_tensor)  # [N, D]
+   
             od_embeddings = od_mlp(train_od_tensor)
-            
-            cl_loss = contrastive_loss(train_attr_tensor, od_embeddings)
+   
+
+
+            cl_loss_sym = contrastive_loss_sym(train_attr_tensor, od_embeddings)
+  
 
             # Flow预测 loss
-            _, ori_embed, dst_embed,dst_od_embed, true_flow, dis_embed = build_batch(batch, region_embeddings,od_embeddings, train_idx_map)
+            _, ori_embed, dst_embed,dst_od_embed, true_flow, dis_embed,ori_od_embed = build_batch(batch, region_embeddings,od_embeddings, train_idx_map)
             pair_embed = torch.cat([ori_embed, dst_embed, dis_embed], dim=-1)
             od_pair_embed = torch.cat([ori_embed, dst_od_embed,dis_embed], dim=-1)
             flow1 = distributepredictor(pair_embed).view(-1, 1)
             weights = 1 
             flow_loss = torch.mean(weights * (flow1.squeeze() - true_flow) ** 2)
 
+
             flow2 = od_joint_mlp(od_pair_embed).view(-1, 1)
-
+ 
             flow_loss2 = torch.mean(weights * (flow2.squeeze() - true_flow) ** 2)
-            
 
-            loss = flow_loss  + 10* cl_loss + flow_loss2# 可调权重
+
+            loss = flow_loss  + 5 * cl_loss_sym + flow_loss2 # 可调权重
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -111,7 +111,6 @@ def main(args):
         # ----------------- 验证 -----------------
         region_encoder.eval()
         distributepredictor.eval()
-
         od_mlp.eval()
         with torch.no_grad():
             region_embeddings_val = region_encoder(attr_tensor, neighbor_tensor)
@@ -125,7 +124,6 @@ def main(args):
                 patience_counter = args.patience
                 best_model_state = {
                     'region_encoder': region_encoder.state_dict(),
-                    # 'flow_predictor': flow_predictor.state_dict(),
                     'od_mlp': od_mlp.state_dict()
                 }
             else:
@@ -134,8 +132,11 @@ def main(args):
                     print("Early stopping!")
                     break
 
+
+    # ----------------- 测试 -----------------
     print("\n  **Evaluating on test set...")
     region_encoder.load_state_dict(best_model_state['region_encoder'])
+
     od_mlp.load_state_dict(best_model_state['od_mlp'])
 
     region_encoder.eval()
@@ -153,18 +154,20 @@ def main(args):
                 f.write(f"{k}: {v:.6f}\n")
 
 
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gpu", type=int, default=3)
+    parser.add_argument("--gpu", type=int, default=5)
     parser.add_argument("--seed", type=int, default=1234)
-    parser.add_argument("--dataset", type=str, default="./data/NYC")
+    parser.add_argument("--city_path", type=str, default="./data/NYC")
     parser.add_argument("--neighbor_k", type=int, default=30)
     parser.add_argument("--embed_dim", type=int, default=60)
-    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--batch_size", type=int, default=2)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--max_epoch", type=int, default=200)
-    parser.add_argument("--patience", type=int, default=10)
+    parser.add_argument("--patience", type=int, default=50)
     args = parser.parse_args()
 
-    set_seed(args.seed)
+    set_seed(args)
     main(args)
