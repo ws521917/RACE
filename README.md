@@ -65,6 +65,6 @@ Example: New York City dataset
 (San Francisco and Washington DC can be run in the same way.)
 
 ```shell
-python ./model/main.py --dataset NYC --embed_dim 48 --neighbor_k 30
+python ./model/main.py --city_path  "./data/NYC" 
 ```
 
