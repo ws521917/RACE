@@ -32,10 +32,10 @@ def main(args):
   
     distributepredictor = distributePredictor(args.embed_dim).cuda()
 
-    joint_input_dim = 217
+    joint_input_dim = args.embed_dim *4 +1
     od_joint_mlp = ODJointMLP(input_dim=joint_input_dim, hidden_dim=args.embed_dim, output_dim=1).cuda()
     
-    od_mlp = ODFeatureMLP(input_dim=train_od_features.shape[1], hidden_dim=args.embed_dim, output_dim=48).cuda()
+    od_mlp = ODFeatureMLP(input_dim=train_od_features.shape[1], hidden_dim=args.embed_dim, output_dim=args.embed_dim).cuda()
     
     optimizer = torch.optim.Adam(
         list(region_encoder.parameters()) +
@@ -158,15 +158,15 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gpu", type=int, default=5)
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--city_path", type=str, default="./data/NYC")
     parser.add_argument("--neighbor_k", type=int, default=30)
-    parser.add_argument("--embed_dim", type=int, default=60)
+    parser.add_argument("--embed_dim", type=int, default=48)
     parser.add_argument("--batch_size", type=int, default=2)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--max_epoch", type=int, default=200)
-    parser.add_argument("--patience", type=int, default=50)
+    parser.add_argument("--patience", type=int, default=30)
     args = parser.parse_args()
 
     set_seed(args)
