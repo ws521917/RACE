@@ -68,7 +68,7 @@ class distributePredictor(nn.Module):
     def __init__(self, embed_dim):
         super().__init__()
         self.relation_mlp = nn.Sequential(
-            nn.Linear(337, 256),
+            nn.Linear(embed_dim*6+1, 256),
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
