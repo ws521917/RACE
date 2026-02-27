@@ -18,7 +18,7 @@ def contrastive_loss_sym(a, o, T=0.25):
     loss1 = F.cross_entropy(logits, labels)
     loss2 = F.cross_entropy(logits.t(), labels)
     return 0.5 * (loss1 + loss2)
-
+seed = 2
 def build_batch(batch, region_embeddings, od_embeddings, train_idx_map):
     origins = []
     origin_idx = []
@@ -73,12 +73,9 @@ def build_batch(batch, region_embeddings, od_embeddings, train_idx_map):
 
 
 def set_seed(args):
-
     if "SF" in args.city_path:
-        args.seed = 2
-    
+        args.seed = seed    
     seed = args.seed
-
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
