@@ -166,7 +166,7 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size", type=int, default=2)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--max_epoch", type=int, default=200)
-    parser.add_argument("--patience", type=int, default=30)
+    parser.add_argument("--patience", type=int, default=20)
     args = parser.parse_args()
 
     set_seed(args)
