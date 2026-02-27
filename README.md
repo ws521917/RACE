@@ -11,7 +11,7 @@ RACE explicitly models asymmetric regional roles (origin vs. destination) and di
 ## Project Structure
 
 - `main.py`: entry point for model training and evaluation.
-- `framework.py`: implementation of the RACE model, including bidirectional embedding enhancement, collaborative encoding, and multi-view prediction.
+- `model.py`: implementation of the RACE model, including bidirectional embedding enhancement, collaborative encoding, and multi-view prediction.
 - `data_load.py`: dataset loading and region-level cold-start split.
 - `tools.py`: evaluation utilities, including CPC, MAE, RMSE and NRMSE computation.
 
